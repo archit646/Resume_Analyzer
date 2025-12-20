@@ -1,49 +1,74 @@
 import { useState } from "react";
+import axios from "axios";
 
 function App() {
   const [formFilled, setFormFilled] = useState(false);
   const [file, setFile] = useState(null);
-  const handleSubmit = (e) => {
+  const [data, setData] = useState(null);
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (file) {
       setFormFilled(true);
     } else {
       alert("Please Upload Resume");
     }
+    const formData = new FormData();
+    formData.append("resume", file);
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/resume/upload/",
+      formData
+    );
+
+    if (response.status === 200) {
+      const newResId = response.data.resume_id;
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/resume/analyze/",
+        { resume_id: newResId }
+      );
+      setData(res.data);
+      console.log(res.data.matched_skills);
+    }
+
+    // console.log(response.data.resume_id)
   };
-  const formData = new FormData();
-  formData.append("resume", file)
-  const response=await axios.post()
+
   return (
     <>
       <div className="main border w-[70%] m-auto flex flex-col items-center">
         {formFilled ? (
-          
-            
-            <div className="inner-div border w-full">
-              <h1 className="text-center">Result</h1>
-              <div>
-                <span>Name:-</span>
-              </div>
-              <div>
-                <span>Role:-</span>
-              </div>
-              <div>
-                <span>Level:-</span>
-              </div>
-              <div>
-                <span>Match Score:-</span>
-              </div>
-              <div>
-                <span>Match Skills:-</span>
-              </div>
-              <div>
-                <span>Missing Skills:-</span>
-              </div>
-              <div>
-                <span>Suggetions:-</span>
-              </div>
+          <div className="inner-div border w-full">
+            <h1 className="text-center text-2xl font-bold text-red-600 bg-yellow-400">
+              Result
+            </h1>
+            <div>
+              <span className="font-bold">Name:-</span>
+              <span>{data?.detected_name}</span>
             </div>
+            <div>
+              <span className="font-bold">Role:-</span>
+              <span>{data?.detected_role}</span>
+            </div>
+            <div>
+              <span className="font-bold">Level:-</span>
+              <span>{data?.experience_level}</span>
+            </div>
+            <div>
+              <span className="font-bold">Match Score:-</span>
+              <span>{data?.match_score}</span>
+            </div>
+            <div>
+              <span className="font-bold">Matched Skills:-</span>
+              <span>{data?.matched_skills.join(", ")}</span>
+            </div>
+            <div>
+              <span className="font-bold">Missing Skills:-</span>
+              <span>{data?.missing_skills.join(", ")}</span>
+            </div>
+            <div>
+              <span className="font-bold">Suggetions:-</span>
+              <span>{data?.suggetions}</span>
+            </div>
+          </div>
         ) : (
           <form
             onSubmit={handleSubmit}
