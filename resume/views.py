@@ -54,23 +54,26 @@ class ResumeUploadAPI(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
-        resume_file = request.FILES.get("resume")
-        if not resume_file:
-            return Response({"error": "No resume file"}, status=400)
+        return Response({"ok": True})
+    #     resume_file = request.FILES.get("resume")
+    #     if not resume_file:
+    #         return Response({"error": "No resume file"}, status=400)
 
-        resume = Resume.objects.create(file=resume_file)
+    #     resume = Resume.objects.create(file=resume_file)
 
-        resume_text = extract_text(resume.file.path)
-        if not resume_text:
-            return Response(
-                {"error": "Unreadable or scanned PDF"},
-                status=400
-            )
+    #     resume_text = extract_text(resume.file.path)
+    #     if not resume_text:
+    #         return Response(
+    #             {"error": "Unreadable or scanned PDF"},
+    #             status=400
+    #         )
 
-        return Response({
-            "resume_id": resume.id,
-            "resume_text": resume_text
-        })
+    #     return Response({
+    #         "resume_id": resume.id,
+    #         "resume_text": resume_text
+    #     })
+   
+        
 
 
 @method_decorator(csrf_exempt, name="dispatch")
