@@ -3,10 +3,13 @@ from .models import Resume
 from .serializers import ResumeAnalysisSerializer
 import json
 from rest_framework import status
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .utils import extract_text
+
+@method_decorator(csrf_exempt, name="dispatch")
 class ResumeUploadAPI(APIView):
     def post(self,request):
         resume_file=request.FILES.get("resume")
