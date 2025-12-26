@@ -15,14 +15,14 @@ function App() {
     const formData = new FormData();
     formData.append("resume", file);
     const response = await axios.post(
-      "http://127.0.0.1:8000/api/resume/upload/",
+      "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
       formData
     );
 
     if (response.status === 200) {
       const newResId = response.data.resume_id;
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/resume/analyze/",
+        "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
         { resume_id: newResId }
       );
       setData(res.data);
