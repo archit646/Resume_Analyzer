@@ -49,12 +49,12 @@ import json
 
 def analyze_resume(resume_text):
     try:
-        api_key = config("GEMINI_API_KEY")
-        client = genai.Client(api_key=api_key)
+        client = genai.Client(api_key=config("GEMINI_API_KEY"))
 
-        prompt = f"""
-You are a resume analyzer.
-Return ONLY valid JSON.
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"""
+Analyze the resume text and return JSON only.
 
 Schema:
 {{
@@ -69,18 +69,13 @@ Schema:
 
 Resume text:
 {resume_text}
-"""
-
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
+""",
+            generation_config={
+                "response_mime_type": "application/json"
+            }
         )
 
-        raw = response.text.strip()
-        if not raw.startswith("{"):
-            raise ValueError("Invalid JSON from Gemini")
-
-        return json.loads(raw)
+        return json.loads(response.text)
 
     except Exception as e:
         print("Gemini error:", e)
