@@ -5,32 +5,78 @@ function App() {
   const [formFilled, setFormFilled] = useState(false);
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (file) {
+  //     setFormFilled(true);
+  //   } else {
+  //     alert("Please Upload Resume");
+  //   }
+  //   const formData = new FormData();
+  //   formData.append("resume", file);
+  //   const response = await axios.post(
+  //     "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
+  //     formData
+  //   );
+
+  //   if (response.status === 200) {
+  //     const newResId = response.data.resume_id;
+  //     const res = await axios.post(
+  //       "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
+  //       { resume_id: newResId }
+  //     );
+  //     setData(res.data);
+  //     console.log(res.data.matched_skills);
+  //   }
+
+  //   // console.log(response.data.resume_id)
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (file) {
-      setFormFilled(true);
-    } else {
-      alert("Please Upload Resume");
-    }
+  e.preventDefault();
+
+  if (!file) {
+    alert("Please Upload Resume");
+    return;
+  }
+
+  try {
+    // 1️⃣ Upload resume
     const formData = new FormData();
     formData.append("resume", file);
-    const response = await axios.post(
+
+    const uploadRes = await axios.post(
       "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
       formData
     );
 
-    if (response.status === 200) {
-      const newResId = response.data.resume_id;
-      const res = await axios.post(
-        "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
-        { resume_id: newResId }
-      );
-      setData(res.data);
-      console.log(res.data.matched_skills);
+    const resumeId = uploadRes?.data?.resume_id;
+
+    if (!resumeId) {
+      alert("Resume upload failed");
+      return;
     }
 
-    // console.log(response.data.resume_id)
-  };
+    // 2️⃣ Analyze resume (FORCE JSON)
+    const analyzeRes = await axios.post(
+      "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
+      JSON.stringify({ resume_id: resumeId }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // 3️⃣ Success → now show result
+    setData(analyzeRes.data);
+    setFormFilled(true);
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <>
