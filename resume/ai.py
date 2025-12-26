@@ -47,15 +47,14 @@ from decouple import config
 from google import genai
 import json
 
-api_key = config("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key)
-
 def analyze_resume(resume_text):
-    prompt = f"""
-You are a resume analyzer.
+    try:
+        api_key = config("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key)
 
+        prompt = f"""
+You are a resume analyzer.
 Return ONLY valid JSON.
-No markdown, no backticks, no extra text.
 
 Schema:
 {{
@@ -72,30 +71,16 @@ Resume text:
 {resume_text}
 """
 
-    try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
 
         raw = response.text.strip()
-
-        # 🛑 HARD GUARD
         if not raw.startswith("{"):
-            raise ValueError("Gemini did not return JSON")
+            raise ValueError("Invalid JSON from Gemini")
 
-        data = json.loads(raw)
-
-        # 🛑 Schema safety (minimal)
-        data.setdefault("detected_name", "")
-        data.setdefault("detected_role", "")
-        data.setdefault("experience_level", "")
-        data.setdefault("match_score", 0)
-        data.setdefault("matched_skills", [])
-        data.setdefault("missing_skills", [])
-        data.setdefault("suggestions", "")
-
-        return data
+        return json.loads(raw)
 
     except Exception as e:
         print("Gemini error:", e)
