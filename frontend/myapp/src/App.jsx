@@ -41,21 +41,19 @@ function App() {
   }
 
   try {
-    // 1️⃣ Upload resume
-    const formData = new FormData();
-    formData.append("resume", file);
+   const formData = new FormData();
+   formData.append("resume", file);
 
-    const uploadRes = await axios.post(
-      "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
-      formData
-    );
+   const uploadRes = await axios.post(
+  "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
+  formData
+);
 
-    const resumeId = uploadRes?.data?.resume_id;
+   if (!uploadRes.data?.resume_id) {
+   alert("Upload failed");
+   return;
+}
 
-    if (!resumeId) {
-      alert("Resume upload failed");
-      return;
-    }
 
     // 2️⃣ Analyze resume (FORCE JSON)
     const analyzeRes = await axios.post(
