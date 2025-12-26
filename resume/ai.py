@@ -46,15 +46,29 @@
 from decouple import config
 from google import genai
 import json
+import re
+
+def _extract_json(text: str):
+    """
+    Extract first valid JSON object from text.
+    """
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        raise ValueError("No JSON object found")
+    return json.loads(match.group())
 
 def analyze_resume(resume_text):
-    try:
-        client = genai.Client(api_key=config("GEMINI_API_KEY"))
+    client = genai.Client(api_key=config("GEMINI_API_KEY"))
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=f"""
-Analyze the resume text and return JSON only.
+    prompt = f"""
+You are a resume analyzer.
+
+STRICT RULES:
+- Output ONLY valid JSON
+- No markdown
+- No explanation
+- No backticks
+- No extra text
 
 Schema:
 {{
@@ -69,14 +83,40 @@ Schema:
 
 Resume text:
 {resume_text}
-""",
+"""
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
             generation_config={
+                "temperature": 0,
                 "response_mime_type": "application/json"
             }
         )
 
-        return json.loads(response.text)
+        raw = response.text.strip()
+
+        # 1️⃣ Try direct JSON
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+
+        # 2️⃣ Try extracting JSON from text
+        return _extract_json(raw)
 
     except Exception as e:
         print("Gemini error:", e)
-        return None
+
+        # 3️⃣ FINAL SAFE FALLBACK (NEVER 500)
+        return {
+            "detected_name": "",
+            "detected_role": "",
+            "experience_level": "",
+            "match_score": 0,
+            "matched_skills": [],
+            "missing_skills": [],
+            "suggestions": "AI could not reliably parse this resume. Try a clearer resume format."
+        }
+
