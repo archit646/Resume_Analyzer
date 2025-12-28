@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from .models import ResumeAnalysis
 class ResumeAnalysisSerializer(serializers.ModelSerializer):
+    detected_name = serializers.CharField(required=False, allow_blank=True)
+    detected_role = serializers.CharField(required=False, allow_blank=True)
+    experience_level = serializers.CharField(required=False, allow_blank=True)
     class Meta:
         model=ResumeAnalysis
         fields="__all__"
-        extra_kwargs={"resume":{"required":False},"detected_name":{"required":False},"detected_role":{"required":False},"experience_level":{"required":False},"match_score":{"required":False},"matched_skills":{"required":False},"missing_skills":{"required":False},"suggestions":{"required":False}}
+        extra_kwargs={"resume":{"required":False}}
