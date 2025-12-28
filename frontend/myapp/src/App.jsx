@@ -5,6 +5,8 @@ function App() {
   const [formFilled, setFormFilled] = useState(false);
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
   //   if (file) {
@@ -32,51 +34,50 @@ function App() {
   //   // console.log(response.data.resume_id)
   // };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!file) {
-    alert("Please Upload Resume");
-    return;
-  }
-
-  try {
-    // 1️⃣ Upload resume
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    const uploadRes = await axios.post(
-      "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
-      formData
-    );
-
-    const resumeId = uploadRes.data.resume_id;
-    if (!resumeId) {
-      alert("Upload failed");
+    if (!file) {
+      alert("Please Upload Resume");
       return;
     }
 
-    // 2️⃣ Analyze resume
-    const analyzeRes = await axios.post(
-      "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
-      { resume_id: resumeId }, // axios auto JSON
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      setLoading(true); // 🔒 disable button + show processing
+
+      // 1️⃣ Upload resume
+      const formData = new FormData();
+      formData.append("resume", file);
+
+      const uploadRes = await axios.post(
+        "https://resume-analyzer-9otw.onrender.com/api/resume/upload/",
+        formData
+      );
+
+      const resumeId = uploadRes.data.resume_id;
+      if (!resumeId) {
+        throw new Error("Upload failed");
       }
-    );
 
-    // 3️⃣ Show result
-    setData(analyzeRes.data);
-    setFormFilled(true);
+      // 2️⃣ Analyze resume
+      const analyzeRes = await axios.post(
+        "https://resume-analyzer-9otw.onrender.com/api/resume/analyze/",
+        { resume_id: resumeId },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-    alert("Something went wrong");
-  }
-};
-
+      // 3️⃣ Success
+      setData(analyzeRes.data);
+      setFormFilled(true);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false); // 🔓 enable button back
+    }
+  };
 
   return (
     <>
@@ -131,9 +132,16 @@ function App() {
             ></input>
             <button
               type="submit"
-              className="bg-blue-800 text-yellow-300 font-bold py-1 px-3 cursor-pointer"
+              disabled={loading}
+              className={`font-bold py-1 px-3 cursor-pointer
+    ${
+      loading
+        ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+        : "bg-blue-800 text-yellow-300 hover:bg-blue-900"
+    }
+  `}
             >
-              Submit
+              {loading ? "Analyzing..." : "Analyze Resume"}
             </button>
           </form>
         )}
