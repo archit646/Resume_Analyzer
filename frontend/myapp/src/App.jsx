@@ -83,7 +83,7 @@ function App() {
     <>
       <div className="main border w-[70%] m-auto flex flex-col items-center">
         {formFilled ? (
-          <div className="inner-div border w-full">
+          <div className="inner-div w-full">
             <h1 className="text-center text-2xl font-bold text-red-600 bg-yellow-400">
               Result
             </h1>
@@ -119,7 +119,7 @@ function App() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="inline-flex flex-col items-center border gap-3"
+            className="inline-flex flex-col items-center gap-3"
           >
             <h1 className="bg-red-700 py-1 px-2 text-white font-bold">
               Upload Resume
