@@ -90,10 +90,7 @@ Resume text:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
-            generation_config={
-                "temperature": 0,
-                "response_mime_type": "application/json"
-            }
+          
         )
 
         raw = response.text.strip()
