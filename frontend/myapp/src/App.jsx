@@ -112,7 +112,7 @@ function App() {
             </div>
             <div>
               <span className="font-bold">Suggetions:-</span>
-              <span>{data?.suggetions}</span>
+              <span>{data?.suggestions}</span>
             </div>
           </div>
         ) : (
